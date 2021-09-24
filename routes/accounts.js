@@ -1,4 +1,4 @@
-const { User, validateUser } = require('../models/user');
+const { User, validateUser, Child, Activity } = require('../models/user');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const express = require('express');
@@ -124,6 +124,19 @@ router.get("/:userId/children/:childrenId", async (req, res)=>{
     try {
         const child = await Child.find();
         return res.send(child);
+    } catch (ex) {
+        return res.status(500).send(`Internal Server Error: ${ex}`);
+    }
+})
+
+// Routes for Activities
+
+//Get Activity
+router.get("/:userId/activities/:activitiesId", async (req, res)=>{
+
+    try {
+        const activity = await Activity.find();
+        return res.send(activity);
     } catch (ex) {
         return res.status(500).send(`Internal Server Error: ${ex}`);
     }
