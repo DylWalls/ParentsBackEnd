@@ -3,7 +3,13 @@ const Joi = require ('joi');
 const config = require('config');
 const jwt = require('jsonwebtoken');
 
-
+const childsSchema = new mongoose.Schema({
+    firstName:  { type: String, required: true, minlength: 2, maxlength: 50 },
+    lastName:  { type: String, required: true, minlength: 2, maxlength: 50 },
+    allergies: { type: Array, required: true},
+    glasses: { type: Boolean, default: false},
+    stock: {type: Array, required: true}
+});
 
 const userSchema = new mongoose.Schema({
     email: { type: String, unique: true, required: true, minlength: 5, maxlength: 255 },
@@ -11,6 +17,7 @@ const userSchema = new mongoose.Schema({
     lastName:  { type: String, required: true, minlength: 2, maxlength: 50 },
     password: { type: String, required: true, minlength: 5, maxlength: 1024 },
     isAdmin: {type: Boolean, default: false},
+    children: {type : [childsSchema], default: []}
 });
 
 
@@ -20,6 +27,19 @@ userSchema.methods.generateAuthToken = function () {
 
 
 const User = mongoose.model('User', userSchema);
+const Child = mongoose.model('Child', childsSchema);
+
+
+function validateChild(child) {
+    const schema = Joi.object({
+        firstName: Joi.string().min(2).max(50).required(),
+        lastName: Joi.string().min(2).max(50).required(),
+        allergies: Joi.array(),
+        glasses: Joi.boolean(),
+        stock: Joi.array()
+  });
+    return schema.validate(child);
+}
 
 function validateUser(user) {
     const schema = Joi.object({
@@ -33,5 +53,8 @@ function validateUser(user) {
   
 
 module.exports.User = User;
+module.exports.Child= Child,
 module.exports.validateUser = validateUser;
+module.exports.validateChild= validateChild,
 module.exports.userSchema = userSchema;
+module.exports.childsSchema= childsSchema
