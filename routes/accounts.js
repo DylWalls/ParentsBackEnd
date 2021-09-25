@@ -60,40 +60,8 @@ router.post("/", async (req, res) => {
     }
 });
 
-// Updating User Account  
-router.put("/:userId", auth, async (req, res) =>{
-    try {
-        const { error } = validateUser(req.body);
-            if (error) return res.status(400).send(error);
-
-            const salt = await bcrypt.genSalt(10)
-        let user = await User.findByIdAndUpdate(req.params.userId,{
-            email: req.body.email,
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            password: await bcrypt.hash(req.body.password, salt),
-        },
-            {new: true}
-        );
-        if (!user)
-        return res
-            .status(400)
-            .send(`The User with ID of "${req.params.userId}" does not exist`);
-
-        await user.save();
-        const token = user.generateAuthToken();
-
-        return res
-            .header("x-auth-token", token)
-            .header("access-control-expose-headers", "x-auth-token")
-            .send({_id: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName, isAdmin: this.isAdmin});
-        } catch (ex) {
-            return res.status(500).send(`Internal Server Error: ${ex}`);
-        }
-});
-
 // Deleting User(Parent)
-router.delete('/:userId', auth, async (req, res) => {
+router.delete('/:userId', async (req, res) => {
     try {
         const user = await User.findByIdAndRemove(req.params.userId);
         if(!user)
@@ -118,7 +86,6 @@ router.get("/:userId/children", async (req, res)=>{
 })
 
 //Get Child by ID
-//Get Entire Classroom
 router.get("/:userId/children/:childrenId", async (req, res)=>{
 
     try {
@@ -128,6 +95,50 @@ router.get("/:userId/children/:childrenId", async (req, res)=>{
         return res.status(500).send(`Internal Server Error: ${ex}`);
     }
 })
+router.post("/:userId/children", async(req, res)=>{
+    try {
+        const user = await User.findById(req.params.userId);
+        if(!user)
+            return res
+                .status(400)
+                .send(`The User with Id of "${req.params.userId}" does not exist.`);
+                let child = new Child({
+                    firstName: req.body.firstName,
+                    lastName: req.body.lastName,
+                    allergies: req.body.allergies,
+                   glasses: req.body.glasses,
+                   stock: req.body.stock
+                });
+        user.children.push(child);
+        await user.save();
+        return res.send(user.children);
+    } catch (ex) {
+        return res.status(500).send(`Internal Server Error: ${ex}`);
+    }
+})
+
+//Deleting a Child from Parent
+router.delete("/:userId/children/:childrenId", async (req, res) => {
+    try {
+      const user = await User.findById(req.params.userId);
+      if (!user)
+        return res
+          .status(400)
+          .send(`The user with id "${req.params.userId}" does not exist.`);
+      let children = user.children.id(req.params.childrenId);
+      if (!children)
+        return res
+          .status(400)
+          .send(
+            `The Child with id of "${req.params.childrenId}" does not exist.`
+          );
+      children = await children.remove();
+      await user.save();
+      return res.send(children);
+    } catch (ex) {
+      return res.status(500).send(`Internal Server Error: ${ex}`);
+    }
+  }); 
 
 // Routes for Activities
 
@@ -138,7 +149,7 @@ router.get("/:userId/activities/:activitiesId", async (req, res)=>{
         const activity = await Activity.find();
         return res.send(activity);
     } catch (ex) {
-        return res.status(500).send(`Internal Server Error: ${ex}`);
+        return res.status(500).send(`Internal Server Error: ${ex}`); 
     }
 })
 
