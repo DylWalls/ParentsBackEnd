@@ -153,6 +153,20 @@ router.get("/:userId/activities/:activitiesId", async (req, res)=>{
     }
 })
 
+//Creating Activities for Parents
+// router.post("/activities", async (req, res) => {
+//     try {
+//         activity = new Activity({
+//             Location: req.body.Location,
+//             ActivityName: req.body.ActivityName,
+//             ActivityDate: req.body.ActivityDate
+//         });
+
+//         return res.send(activity)
+//     } catch (ex) {
+//         return res.status(500).send(`Internal Server Error: ${ex}`);
+//     }
+// });
 
 
 module.exports = router;

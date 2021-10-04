@@ -3,6 +3,13 @@ const Joi = require ('joi');
 const config = require('config');
 const jwt = require('jsonwebtoken');
 
+
+const activitySchema = new mongoose.Schema({
+    Location: {type: String, required: true},
+    ActivityName: {type: String, required: true},
+    ActivityDate: {type: Array, required:true}
+})
+
 const childsSchema = new mongoose.Schema({
     firstName:  { type: String, required: true, minlength: 2, maxlength: 50 },
     lastName:  { type: String, required: true, minlength: 2, maxlength: 50 },
@@ -21,6 +28,7 @@ const userSchema = new mongoose.Schema({
 });
 
 
+
 userSchema.methods.generateAuthToken = function () {
     return jwt.sign({ _id: this._id, name: this.userName , isAdmin: this.isAdmin}, config.get('jwtSecret'));
 };
@@ -28,6 +36,7 @@ userSchema.methods.generateAuthToken = function () {
 
 const User = mongoose.model('User', userSchema);
 const Child = mongoose.model('Child', childsSchema);
+const Activity = mongoose.model('Activity', activitySchema);
 
 
 function validateChild(child) {
@@ -52,9 +61,10 @@ function validateUser(user) {
 }
   
 
-module.exports.User = User;
+module.exports.User = User,
 module.exports.Child= Child,
-module.exports.validateUser = validateUser;
+module.exports.Activity= Activity,
+module.exports.validateUser = validateUser,
 module.exports.validateChild= validateChild,
-module.exports.userSchema = userSchema;
+module.exports.userSchema = userSchema,
 module.exports.childsSchema= childsSchema
